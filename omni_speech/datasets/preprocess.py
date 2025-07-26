@@ -667,101 +667,88 @@ def preprocess_llama_3_v2(
         input_ids=input_ids,  # tensor(bs x seq_len)
         labels=targets,  # tensor(bs x seq_len)
     )
+
 def preprocess_hcx(
     sources,
     tokenizer: transformers.PreTrainedTokenizer,
     has_speech: bool = False,
-    max_len: int = 2048,
+    max_len=2048,
     system_message: str = "You are a helpful language and speech assistant. You are able to understand the speech content that the user provides, and assist the user with a variety of tasks using natural language and speech."
 ) -> Dict:
     roles = {"human": "user", "gpt": "assistant"}
 
-    # 1) 토크나이저 복제 및 음성 토큰 추가
     tokenizer = copy.deepcopy(tokenizer)
     if has_speech:
-        tokenizer.add_tokens([DEFAULT_SPEECH_TOKEN], special_tokens=True)
-    speech_token_index = (
-        tokenizer.convert_tokens_to_ids(DEFAULT_SPEECH_TOKEN)
-        if has_speech else None
-    )
+        tokenizer.add_tokens(["<speech>"], special_tokens=True)
+    speech_token_index = tokenizer.convert_tokens_to_ids("<speech>")
+    eot_id = tokenizer.convert_tokens_to_ids("<|endofturn|>")
 
-    # 2) EOS 토큰(<|endofturn|>)과 unmask 리스트
-    eot_id = tokenizer.eos_token_id
     unmask_tokens = []
     unmask_tokens_idx = [tokenizer.convert_tokens_to_ids(tok) for tok in unmask_tokens]
 
     input_ids, targets = [], []
 
     for i, source in enumerate(sources):
-        # 첫 발화가 user가 아니면 건너뛰기
-        first_role = source[0].get("from") or source[0].get("role")
-        if roles.get(first_role) != roles["human"]:
+        if roles[source[0]["from"]] != "user":
             source = source[1:]
 
-        # example 단위 변수 초기화
         input_id, target = [], []
 
-        # --- 1) 시스템 + 히스토리 템플릿 적용
         all_convs = [{"role": "system", "content": system_message}]
+        
         for conv in source[:-1]:
             try:
-                role, content = conv["role"], conv["content"]
-            except KeyError:
-                role, content = conv["from"], conv["value"]
+                role = conv["role"]
+                content = conv["content"]
+            except:
+                role = conv["from"]
+                content = conv["value"]
+
             role = roles.get(role, role)
-            if isinstance(content, list):
-                content = "".join(content)
-            all_convs.append({"role": role, "content": content})
+            conv = [{"role": role, "content": content}]
+            all_convs += conv
 
-        # context_ids
-        context_ids = tokenizer.apply_chat_template(all_convs, tokenize=True)
-        input_id += context_ids
-        target   += [IGNORE_INDEX] * len(context_ids)
+        input_id += tokenizer.apply_chat_template(all_convs, tokenize=True)
+        target += [IGNORE_INDEX] * len(input_id)
 
-        # --- 2) 마지막 턴(예측 대상) 템플릿 적용
-        last = source[-1]
+        conv = source[-1]
         try:
-            role, content = last["role"], last["content"]
-        except KeyError:
-            role, content = last["from"], last["value"]
+            role = conv["role"]
+            content = conv["content"]
+        except:
+            role = conv["from"]
+            content = conv["value"]
+
         role = roles.get(role, role)
+        conv_list = [{"role": role, "content": content}]
+        
+        encode_id = tokenizer.apply_chat_template(conv_list, tokenize=True)
+        encode_id.append(eot_id)
 
-        if isinstance(content, list):
-            content = "".join(content)
-
-        response_ids = tokenizer.apply_chat_template(
-            [{"role": role, "content": content}],
-            tokenize=True
-        )
-        # EOS 보장
-        if not response_ids or response_ids[-1] != eot_id:
-            response_ids.append(eot_id)
-
-        input_id += response_ids
-
-        # 3) target 생성: special-token만 IGNORE, 나머지는 그대로
-        for tok in response_ids:
-            if tok in unmask_tokens_idx:
-                target.append(tok)
-            elif tok in tokenizer.all_special_ids:
-                target.append(IGNORE_INDEX)
-            else:
-                target.append(tok)
-
-        # 4) <speech> 토큰 매핑
-        if speech_token_index is not None:
-            for idx, tok in enumerate(input_id):
-                if tok == speech_token_index:
-                    input_id[idx] = SPEECH_TOKEN_INDEX
-
-
+        # The prompt for the assistant is `<|im_start|>assistant\n`. We assume this is 3 tokens.
+        # This part will be masked.
+        prompt_len = 3
+        input_id += encode_id
+        target += [IGNORE_INDEX] * prompt_len
+        target += encode_id[prompt_len:]
+        
+        assert len(input_id) == len(target), f"{len(input_id)} != {len(target)}"
+        for idx, encode_id_val in enumerate(input_id):
+            if encode_id_val in unmask_tokens_idx:
+                target[idx] = encode_id_val
+            if encode_id_val == speech_token_index:
+                input_id[idx] = SPEECH_TOKEN_INDEX
+        
         input_ids.append(input_id)
         targets.append(target)
 
-    # 텐서화하여 반환
     input_ids = torch.tensor(input_ids, dtype=torch.long)
-    targets   = torch.tensor(targets,   dtype=torch.long)
-    return {"input_ids": input_ids, "labels": targets}
+    targets = torch.tensor(targets, dtype=torch.long)
+
+    return dict(
+        input_ids=input_ids,  # tensor(bs x seq_len)
+        labels=targets,  # tensor(bs x seq_len)
+    )
 
 def preprocess(
     sources: Sequence[str],
@@ -786,7 +773,7 @@ def preprocess(
         return preprocess_llama_3_v1(sources, tokenizer, has_speech=has_speech)
     if conversation_lib.default_conversation.sep_style == conversation_lib.SeparatorStyle.QWEN_2_5:
         return preprocess_qwen_2_5_v1(sources, tokenizer, has_speech=has_speech)
-    if conversation_lib.default_conversation.version.startswith("hcx"):
+    if conversation_lib.default_conversation.sep_style == conversation_lib.SeparatorStyle.HCX:
         return preprocess_hcx(sources, tokenizer, has_speech=has_speech)
     raise NotImplementedError
 

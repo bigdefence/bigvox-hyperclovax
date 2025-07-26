@@ -61,7 +61,7 @@ def load_pretrained_model(model_path, model_base=None, is_lora=False, s2s=False,
         # else:
         #     raise ValueError("Unknown model type in model_path. Please include 'llama' or 'qwen' in the model path.")
         lora_cfg_pretrained = OmniSpeechConfig.from_pretrained(model_path)
-        tokenizer = AutoTokenizer.from_pretrained(model_base, use_fast=False)
+        tokenizer = AutoTokenizer.from_pretrained(model_base, use_fast=True)
         print('Loading OmniSpeech from base model...')
         model = model_cls.from_pretrained(model_base, low_cpu_mem_usage=False, config=lora_cfg_pretrained, **kwargs)
         print('Loading additional OmniSpeech weights...')
@@ -82,7 +82,7 @@ def load_pretrained_model(model_path, model_base=None, is_lora=False, s2s=False,
         print('Model is loaded...')
     elif model_base is not None:
         print('Loading OmniSpeech from model_path...')
-        tokenizer = AutoTokenizer.from_pretrained(model_base, use_fast=False)
+        tokenizer = AutoTokenizer.from_pretrained(model_base, use_fast=True)
         cfg_pretrained = AutoConfig.from_pretrained(model_path)
         model = model_cls.from_pretrained(model_base, low_cpu_mem_usage=False, config=cfg_pretrained, **kwargs)
         

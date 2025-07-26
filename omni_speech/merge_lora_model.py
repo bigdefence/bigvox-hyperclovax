@@ -7,7 +7,7 @@ import shortuuid
 import whisper
 from omni_speech.model.builder import load_pretrained_model
 from omni_speech.utils import disable_torch_init
-from omni_speech.datasets.preprocess import tokenizer_speech_token, preprocess_llama_3_v2
+from omni_speech.datasets.preprocess import tokenizer_speech_token, preprocess_hcx
 from torch.utils.data import Dataset, DataLoader
 import pdb
 import math
@@ -38,4 +38,3 @@ if __name__ == "__main__":
     args = parser.parse_args()
 
     merge_lora(args)
-

@@ -90,7 +90,7 @@ class Conversation:
             return ret
         elif self.sep_style == SeparatorStyle.HCX:
             # HyperCLOVAX 스타일은 ChatML과 유사함: <|im_start|>role\ncontent<|im_end|>
-            wrap_sys = lambda msg: f"<|im_start|>system\n{msg}<|im_end|>" if len(msg) > 0 else ""
+            wrap_sys = lambda msg: f"<|im_start|>system\n{msg}<|im_end|>\n" if len(msg) > 0 else ""
             ret = wrap_sys(self.system)
 
             for i, (role, message) in enumerate(messages):
