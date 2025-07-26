@@ -1,11 +1,10 @@
-
 # 🎧 Bigvox-HyperCLOVAX
 
 **Bigvox**은 한국어 음성 인식에 특화된 고성능, 저지연 음성 언어 멀티모달 모델입니다. [naver-hyperclovax/HyperCLOVAX-SEED-Text-Instruct-0.5B](https://huggingface.co/naver-hyperclovax/HyperCLOVAX-SEED-Text-Instruct-0.5B) 기반으로 구축되었습니다. 🚀
 
 ### 📂 모델 접근
 - **GitHub**: [bigdefence/bigvox-hyperclovax](https://github.com/bigdefence/bigvox-hyperclovax) 🌐
-- **HuggingFace**: [bigdefence/bigvox-hyperclovax](https://huggingface.co/bigdefence/bigvox) 🤗
+- **HuggingFace**: [bigdefence/bigvox-hyperclovax-s2t](https://huggingface.co/bigdefence/bigvox-hyperclovax-s2t) 🤗
 - **모델 크기**: 1B 파라미터 📊
 
 ## 🌟 주요 특징
@@ -32,7 +31,7 @@
 1. **레포지토리 클론**:
    ```bash
    git clone https://github.com/bigdefence/bigvox-hyperclovax
-   cd bigvox
+   cd bigvox-hyperclovax
    ```
 
 2. **의존성 설치**:
@@ -54,7 +53,7 @@
 **Huggingface CLI 사용**:
 ```bash
 pip install -U huggingface_hub
-huggingface-cli download bigdefence/bigvox-hyperclovax --local-dir ./checkpoints/bigvox
+huggingface-cli download bigdefence/bigvox-hyperclovax-s2t --local-dir ./checkpoints
 ```
 
 **Snapshot Download 사용**:
@@ -64,8 +63,8 @@ pip install -U huggingface_hub
 ```python
 from huggingface_hub import snapshot_download
 snapshot_download(
-  repo_id="bigdefence/bigvox-hyperclovax",
-  local_dir="./checkpoints/bigvox",
+  repo_id="bigdefence/bigvox-hyperclovax-s2t",
+  local_dir="./checkpoints",
   resume_download=True
 )
 ```
@@ -84,7 +83,7 @@ git clone https://huggingface.co/bigdefence/bigvox-hyperclovax
 **Bigvox**으로 추론을 수행하려면 다음 단계를 따라 모델을 설정하고 로컬에서 실행하세요. 📡
 
 1. **모델 준비**:
-   - [HuggingFace](https://huggingface.co/bigdefence/bigvox-hyperclovax)에서 **Bigvox** 다운로드 📦
+   - [HuggingFace](https://huggingface.co/bigdefence/bigvox-hyperclovax-s2t)에서 **Bigvox** 다운로드 📦
    - [HuggingFace](https://huggingface.co/openai/whisper-large-v3)에서 **Whisper-large-v3** 음성 인코더를 다운로드하여 `./models/speech_encoder/` 디렉토리에 배치 🎤
 
 2. **추론 실행**:
