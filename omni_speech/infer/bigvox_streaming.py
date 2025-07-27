@@ -6,7 +6,7 @@ import whisper
 import argparse
 
 # 체크포인트 경로 설정
-BIGVOX_MODEL = "./checkpoints/bigvox"
+BIGVOX_MODEL = "./checkpoints"
 
 class BigVoxModel:
     def __init__(self, model_name_or_path: str, **kwargs):
