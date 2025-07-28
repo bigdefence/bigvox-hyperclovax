@@ -1,7 +1,7 @@
 # 🎧 Bigvox
 
-**Bigvox**은 한국어 음성 인식에 특화된 고성능, 저지연 음성 언어 멀티모달 모델입니다. [naver-hyperclovax/HyperCLOVAX-SEED-Text-Instruct-0.5B](https://huggingface.co/naver-hyperclovax/HyperCLOVAX-SEED-Text-Instruct-0.5B) 기반으로 구축되었습니다. 🚀
-
+- **Bigvox**은 한국어 음성 인식에 특화된 고성능, 저지연 음성 언어 멀티모달 모델입니다. [naver-hyperclovax/HyperCLOVAX-SEED-Text-Instruct-0.5B](https://huggingface.co/naver-hyperclovax/HyperCLOVAX-SEED-Text-Instruct-0.5B) 기반으로 구축되었습니다. 🚀
+- **End-to-End** 음성 멀티모달 구조를 채택하여 음성 입력부터 텍스트 출력까지 하나의 파이프라인에서 처리하며, 추가적인 중간 모델 없이 자연스럽게 멀티모달 처리를 지원합니다.
 ![image/png](https://cdn-uploads.huggingface.co/production/uploads/653494138bde2fae198fe89e/NwonFS__hErgVy0p2Weu4.png)
 
 ### 📂 모델 접근
